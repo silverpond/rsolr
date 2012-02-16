@@ -168,22 +168,22 @@ describe "RSolr::Client" do
   
   context "adapt_response" do
     include ClientHelper
-    it 'should not try to evaluate ruby when the :qt is not :ruby' do
+    it 'should not try to evaluate json when the :qt is not :json' do
       body = '{:time=>"NOW"}'
       result = client.adapt_response({:params=>{}}, {:status => 200, :body => body, :headers => {}})
       result.should == body
     end
     
-    it 'should evaluate ruby responses when the :wt is :ruby' do
-      body = '{:time=>"NOW"}'
-      result = client.adapt_response({:params=>{:wt=>:ruby}}, {:status => 200, :body => body, :headers => {}})
-      result.should == {:time=>"NOW"}
+    it 'should evaluate json responses when the :wt is :json' do
+      body = '{"time": "NOW"}'
+      result = client.adapt_response({:params=>{:wt=>:json}}, {:status => 200, :body => body, :headers => {}})
+      result.should == {"time"=>"NOW"}
     end
     
-    it "ought raise a RSolr::Error::InvalidRubyResponse when the ruby is indeed frugged, or even fruggified" do
+    it "ought raise a RSolr::Error::InvalidJsonResponse when the json is indeed frugged, or even fruggified" do
       lambda {
-        client.adapt_response({:params=>{:wt => :ruby}}, {:status => 200, :body => "<woops/>", :headers => {}})
-      }.should raise_error RSolr::Error::InvalidRubyResponse
+        client.adapt_response({:params=>{:wt => :json}}, {:status => 200, :body => "<woops/>", :headers => {}})
+      }.should raise_error RSolr::Error::InvalidJsonResponse
     end
   
   end
@@ -197,7 +197,7 @@ describe "RSolr::Client" do
         :data => "data",
         :headers => {}
       )
-      [/fq=0/, /fq=1/, /q=test/, /wt=ruby/].each do |pattern|
+      [/fq=0/, /fq=1/, /q=test/, /wt=json/].each do |pattern|
         result[:query].should match pattern
       end
       result[:data].should == "data"
@@ -210,11 +210,11 @@ describe "RSolr::Client" do
         :data => {:q=>'test', :fq=>[0,1]},
         :headers => {}
       )
-      result[:query].should == "wt=ruby"
+      result[:query].should == "wt=json"
       [/fq=0/, /fq=1/, /q=test/].each do |pattern|
         result[:data].should match pattern
       end
-      result[:data].should_not match /wt=ruby/
+      result[:data].should_not match /wt=json/
       result[:headers].should == {"Content-Type" => "application/x-www-form-urlencoded; charset=UTF-8"}
     end
     

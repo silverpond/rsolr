@@ -24,7 +24,7 @@ The code docs for the last *release* can be viewed here: http://rubydoc.info/gem
   # send a request to /catalog
   response = solr.get 'catalog', :params => {:q => '*:*'}
 
-When the Solr :wt is :ruby, then the response will be a Hash. This Hash is the same object returned by Solr, but evaluated as Ruby. If the :wt is not :ruby, then the response will be a String.
+When the Solr :wt is :json, then the response will be a Hash. This Hash is the same object returned by Solr, but evaluated as json. If the :wt is not :json, then the response will be a String.
 
 The response also exposes 2 attribute readers (for any :wt value), :request and :response. Both are Hash objects with symbolized keys.
 
@@ -144,17 +144,12 @@ Delete by array of queries
   solr.optimize, :optimize_attributes => {}
 
 == Response Formats
-The default response format is Ruby. When the :wt param is set to :ruby, the response is eval'd resulting in a Hash. You can get a raw response by setting the :wt to "ruby" - notice, the string -- not a symbol. RSolr will eval the Ruby string ONLY if the :wt value is :ruby. All other response formats are available as expected, :wt=>'xml' etc..
+The default response format is Json. When the :wt param is set to :json, the response is parsed resulting in a Hash. All other response formats are available as expected, :wt=>'xml' etc..
 
-===Evaluated Ruby (default)
-  solr.get 'select', :params => {:wt => :ruby} # notice :ruby is a Symbol
-===Raw Ruby
-  solr.get 'select', :params => {:wt => 'ruby'} # notice 'ruby' is a String
-
-===XML:
-  solr.get 'select', :params => {:wt => :xml}
 ===JSON:
   solr.get 'select', :params => {:wt => :json}
+===XML:
+  solr.get 'select', :params => {:wt => :xml}
 
 ==Related Resources & Projects
 * {RSolr Google Group}[http://groups.google.com/group/rsolr] -- The RSolr discussion group

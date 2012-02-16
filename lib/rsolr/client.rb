@@ -147,7 +147,7 @@ class RSolr::Client
   # All other options are passed right along to the connection's +send_and_receive+ method (:get, :post, or :head)
   # 
   # +send_and_receive+ returns either a string or hash on a successful ruby request.
-  # When the :params[:wt] => :ruby, the response will be a hash, else a string.
+  # When the :params[:wt] => :json, the response will be a hash, else a string.
   #
   # creates a request context hash,
   # sends it to the connection's +execute+ method
@@ -187,7 +187,7 @@ class RSolr::Client
     opts[:proxy] = proxy unless proxy.nil?
     opts[:method] ||= :get
     raise "The :data option can only be used if :method => :post" if opts[:method] != :post and opts[:data]
-    opts[:params] = opts[:params].nil? ? {:wt => :ruby} : {:wt => :ruby}.merge(opts[:params])
+    opts[:params] = opts[:params].nil? ? {:wt => :json} : {:wt => :json}.merge(opts[:params])
     query = RSolr::Uri.params_to_solr(opts[:params]) unless opts[:params].empty?
     opts[:query] = query
     if opts[:data].is_a? Hash
@@ -215,20 +215,20 @@ class RSolr::Client
   end
   
   # This method will evaluate the :body value
-  # if the params[:uri].params[:wt] == :ruby
+  # if the params[:uri].params[:wt] == :json
   # ... otherwise, the body is returned as is.
   # The return object has methods attached, :request and :response.
   # These methods give you access to the original
   # request and response from the connection.
   #
-  # +adapt_response+ will raise an InvalidRubyResponse
-  # if :wt == :ruby and the body
+  # +adapt_response+ will raise an InvalidJsonResponse
+  # if :wt == :json and the body
   # couldn't be evaluated.
   def adapt_response request, response
     raise "The response does not have the correct keys => :body, :headers, :status" unless
       %W(body headers status) == response.keys.map{|k|k.to_s}.sort
     raise RSolr::Error::Http.new request, response unless [200,302].include? response[:status]
-    result = request[:params][:wt] == :ruby ? evaluate_ruby_response(request, response) : response[:body]
+    result = request[:params][:wt] == :json ? parse_json_response(request, response) : response[:body]
     result.extend Context
     result.request, result.response = request, response
     result.is_a?(Hash) ? result.extend(RSolr::Response) : result
@@ -246,17 +246,19 @@ class RSolr::Client
   end
   
   # evaluates the response[:body],
-  # attempts to bring the ruby string to life.
+  # attempts to bring the json string to life.
   # If a SyntaxError is raised, then
   # this method intercepts and raises a
-  # RSolr::Error::InvalidRubyResponse
+  # RSolr::Error::InvalidJsonResponse
   # instead, giving full access to the
   # request/response objects.
-  def evaluate_ruby_response request, response
+  def parse_json_response request, response
     begin
-      Kernel.eval response[:body].to_s
-    rescue SyntaxError
-      raise RSolr::Error::InvalidRubyResponse.new request, response
+      data = response[:body].to_s 
+      return {} if data == ""
+      JSON.parse data
+    rescue JSON::ParserError
+      raise RSolr::Error::InvalidJsonResponse.new request, response
     end
   end
   

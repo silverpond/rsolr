@@ -108,9 +108,9 @@ module RSolr::Error
     
   end
   
-  # Thrown if the :wt is :ruby
+  # Thrown if the :wt is :json
   # but the body wasn't succesfully parsed/evaluated
-  class InvalidRubyResponse < Http
+  class InvalidJsonResponse < Http
     
   end
   
