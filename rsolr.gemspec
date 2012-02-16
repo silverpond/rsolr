@@ -4,7 +4,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require "rsolr"
 
 Gem::Specification.new do |s|
-  s.name        = "rsolr"
+  s.name        = "silverpond_rsolr"
   s.summary     = "A Ruby client for Apache Solr"
   s.description = %q{RSolr aims to provide a simple and extensible library for working with Solr}
   s.version     = RSolr.version
