@@ -191,7 +191,7 @@ class RSolr::Client
     query = RSolr::Uri.params_to_solr(opts[:params]) unless opts[:params].empty?
     opts[:query] = query
     if opts[:data].is_a? Hash
-      opts[:data] = RSolr::Uri.params_to_solr opts[:data]
+      opts[:data] = RSolr::Uri.params_to_solr({:wt => :json}.merge(opts[:data]))
       opts[:headers] ||= {}
       opts[:headers]['Content-Type'] ||= 'application/x-www-form-urlencoded; charset=UTF-8'
     end
